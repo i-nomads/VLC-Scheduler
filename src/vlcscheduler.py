@@ -59,7 +59,7 @@ async def player_coro(player, rebuild_events_queue, extra_items_queue):
                 player.add(item.path)
             
             if play_duration == 0:
-                await asyncio.sleep(0.25)
+                await asyncio.sleep(1)
                 play_duration = player.status().get('length', 0)
                 
                 if play_duration <= 0:
