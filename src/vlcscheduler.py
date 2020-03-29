@@ -71,7 +71,7 @@ async def player_coro(player, rebuild_events_queue, extra_items_queue):
             
             finished, pending = await asyncio.wait(
                 [asyncio.sleep(play_duration), rebuild_events_queue.get()],
-                return_when=asyncio.FIRST_COMPLETED
+                return_when=asyncio.ALL_COMPLETED
             )
             
             for task in finished:
