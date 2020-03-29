@@ -1,4 +1,4 @@
-import os, sys, asyncio, traceback
+import os, sys, asyncio, traceback, time
 
 import click, schedule
 from watchgod import awatch
@@ -67,11 +67,12 @@ async def player_coro(player, rebuild_events_queue, extra_items_queue):
             
             if item.path != current_item_path:
                 logger.info('Playing %s for %i seconds.' % (item.path, play_duration))
+                start_time = time.time()
                 current_item_path = item.path
             
             finished, pending = await asyncio.wait(
                 [asyncio.sleep(play_duration), rebuild_events_queue.get()],
-                return_when=asyncio.ALL_COMPLETED
+                return_when=asyncio.FIRST_COMPLETED
             )
             
             for task in finished:
@@ -80,6 +81,11 @@ async def player_coro(player, rebuild_events_queue, extra_items_queue):
                 if result:  # we have a new playlist
                     playlist = result
                     current_item_path = None
+
+                    time_left = play_duration - (time.time() - start_time)
+                    logger.info('Waiting for %s to finish... %i more seconds...' % (item.path, time_left))
+                    await asyncio.sleep(time_left)
+
                     player.empty()
             
             for task in pending:
